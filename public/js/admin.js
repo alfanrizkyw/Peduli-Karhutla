@@ -24,6 +24,7 @@ async function enter() {
   $('#login').hidden = true; $('#app').hidden = false; $('#logout').hidden = false;
   const m = await call('/meta');
   $('#meta').replaceChildren(
+    h('span', { class: m.storage.persistent ? 'ok' : 'no', text: m.storage.persistent ? 'Database: permanen (' + m.storage.dir + ')' : 'Database: SEMENTARA, akan hilang saat redeploy!' }),
     h('span', { class: m.moota ? 'ok' : 'no', text: m.moota ? 'Webhook Moota: aktif' : 'Webhook Moota: belum diatur' }),
     h('span', { class: m.webhook ? 'ok' : 'no', text: m.webhook ? 'Webhook umum: aktif' : 'Webhook umum: belum diatur' }),
     h('span', { text: m.uniqueCode ? 'Kode unik: aktif' : 'Kode unik: mati' }));
@@ -60,6 +61,16 @@ $('#donTable').addEventListener('click', async (e) => {
   try { await call(`/donations/${b.dataset.id}/confirm`, 'POST'); }
   catch (err) { alert(err.message); }
   loadDon();
+});
+$('#backup').addEventListener('click', async (e) => {
+  const b = e.currentTarget; b.disabled = true;
+  try {
+    const res = await fetch('/api/admin/backup', { headers: { Authorization: 'Bearer ' + pw } });
+    if (!res.ok) throw new Error('Gagal membuat cadangan');
+    const url = URL.createObjectURL(await res.blob()); const a = document.createElement('a');
+    a.href = url; a.download = 'peduli-karhutla-' + new Date().toLocaleDateString('en-CA') + '.db'; document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  } catch (err) { alert(err.message); }
+  b.disabled = false;
 });
 $('#fStatus').addEventListener('change', loadDon); $('#reloadDon').addEventListener('click', loadDon);
 

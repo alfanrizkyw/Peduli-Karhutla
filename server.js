@@ -1,6 +1,8 @@
 'use strict';
 require('dotenv').config({ quiet: true });
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
@@ -188,6 +190,19 @@ setInterval(() => {
   db.prepare("UPDATE donations SET status='expired' WHERE status='pending' AND expires_at+? < ?").run(GRACE, now());
 }, 60_000).unref();
 
+/* cadangan otomatis harian di folder data/backups (simpan 7 terakhir) */
+async function autoBackup() {
+  try {
+    const dir = path.join(db.storage.dir, 'backups'); fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, `peduli-${new Date().toISOString().slice(0, 10)}.db`);
+    if (!fs.existsSync(file)) await db.backup(file);
+    const all = fs.readdirSync(dir).filter((f) => /^peduli-\d{4}-\d{2}-\d{2}\.db$/.test(f)).sort();
+    for (const f of all.slice(0, Math.max(0, all.length - 7))) fs.rmSync(path.join(dir, f), { force: true });
+  } catch (e) { console.error('[backup otomatis]', e.message); }
+}
+setTimeout(autoBackup, 15_000).unref();
+setInterval(autoBackup, 6 * 3600_000).unref();
+
 /* webhook: Moota */
 app.post('/api/webhook/moota', limiter(60_000, 120), (req, res) => {
   if (!MOOTA_SECRET) return res.status(503).json({ error: 'MOOTA_SECRET belum diatur' });
@@ -253,9 +268,17 @@ admin.get('/donations', (req, res) => {
   res.json(rows);
 });
 admin.post('/donations/:id/confirm', (req, res) => res.json({ ok: markPaidById(String(req.params.id), 'admin') }));
+admin.get('/backup', async (req, res) => {
+  const tmp = path.join(os.tmpdir(), `peduli-backup-${Date.now()}.db`);
+  try {
+    await db.backup(tmp);
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.download(tmp, `peduli-karhutla-${stamp}.db`, () => fs.rm(tmp, { force: true }, () => {}));
+  } catch (e) { console.error('[backup]', e.message); fs.rm(tmp, { force: true }, () => {}); res.status(500).json({ error: 'Gagal membuat cadangan.' }); }
+});
 admin.get('/notes', (req, res) => res.json(db.prepare('SELECT id,name,message,created_at FROM notes ORDER BY id DESC LIMIT 300').all()));
 admin.delete('/notes/:id', (req, res) => { db.prepare('DELETE FROM notes WHERE id=?').run(Number(req.params.id)); broadcast('note'); res.json({ ok: true }); });
-admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET }));
+admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET, storage: db.storage }));
 admin.post('/disbursements', (req, res) => {
   const b = req.body || {};
   const amount = Number(b.amount);
@@ -287,6 +310,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.listen(PORT, () => {
   console.log(`Peduli Karhutla berjalan di ${BASE_URL} (port ${PORT})`);
+  console.log('Database: ' + db.storage.dbPath + (db.storage.persistent ? ' (permanen)' : ' (SEMENTARA, akan hilang saat redeploy!)'));
   if (!MOOTA_SECRET && !WEBHOOK_SECRET) console.log('! Webhook pembayaran belum diatur: konfirmasi hanya lewat /admin');
   if (!ADMIN_PASSWORD || ADMIN_PASSWORD === 'ganti-password-ini') console.log('! ADMIN_PASSWORD belum diatur: /admin dinonaktifkan');
 });
