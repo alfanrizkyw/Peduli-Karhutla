@@ -38,6 +38,7 @@
         <h2 class="adm__h">Daftar donasi</h2>
         <select id="fStatus" aria-label="Filter status"><option value="">Semua</option><option value="pending">Menunggu</option><option value="paid">Berhasil</option><option value="expired">Kedaluwarsa</option><option value="cancelled">Dibatalkan</option></select>
         <button type="button" class="link" id="reloadDon">Muat ulang</button>
+        <button type="button" class="link" id="backup">Unduh cadangan database</button>
       </div>
       <p class="hint">Jika pembayaran sudah masuk tetapi status masih Menunggu (misalnya webhook belum aktif), cocokkan nominalnya di mutasi lalu tekan <strong>Konfirmasi</strong>. Setelah dikonfirmasi, donatur otomatis bisa mencetak nota terima kasih.</p>
       <div class="ledger"><table id="donTable"><thead><tr><th>Waktu</th><th>Nama</th><th class="r">Bayar</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>

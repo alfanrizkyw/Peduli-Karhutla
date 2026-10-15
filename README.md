@@ -31,10 +31,14 @@ Uji logika QRIS: `npm test` (harus tertulis `QRIS OK`).
 ### Nota terima kasih
 Setelah pembayaran terkonfirmasi, donatur melihat tombol **Cetak nota terima kasih** di halaman. Nota terbuka di `/kuitansi?id=...&token=...` (tautan rahasia milik donatur), lalu bisa dicetak atau disimpan sebagai PDF lewat tombol cetak browser. Donatur yang menutup halaman tetap bisa mengambilnya dari daftar **Nota saya** di kotak donasi (tersimpan di browser yang sama).
 
-## 3. Online-kan (hosting)
-Website butuh server Node.js dan **disk yang awet** (database SQLite di folder `data/`). Pilihan mudah:
-- **VPS** (mis. Niagahoster/IDCloudHost/DigitalOcean): `npm install`, jalankan dengan `pm2 start server.js --name karhutla`, pasang Nginx + HTTPS (Let's Encrypt), set `TRUST_PROXY=1`. Nginx wajib: `proxy_buffering off;` untuk `/api/stream`.
-- **Railway / Render**: pasang repo, perintah start `npm start`, tambahkan *Persistent Disk/Volume* dan set `DATA_DIR` ke path disk itu. Isi semua variabel `.env` di dashboard, `TRUST_PROXY=1`.
+## 3. Online-kan di Deplexo (database permanen)
+Website butuh server Node.js dan **disk permanen** (database SQLite). Di Deplexo:
+1. Deploy dari repo GitHub memakai `Dockerfile` (port 3000). `Dockerfile` sudah mengatur `DATA_DIR=/data`.
+2. Setiap aplikasi Deplexo punya **volume permanen di `/data`**; isinya bertahan setelah redeploy. Folder `/tmp` TIDAK permanen.
+3. Env vars (menu Env vars): `BASE_URL` (alamat Deplexo/domain Anda), `PORT=3000`, `TRUST_PROXY=1`, `ADMIN_PASSWORD`, `MOOTA_SECRET` / `WEBHOOK_SECRET` (bila dipakai), `UNIQUE_CODE`. Tidak ada lagi variabel email.
+4. Setelah deploy, buka `/admin`: di bagian atas harus tertulis **"Database: permanen (/data)"**. Jika tertulis *SEMENTARA*, volume belum terpasang atau tidak bisa ditulis: data akan hilang saat redeploy.
+5. **Cadangan**: server menyimpan salinan otomatis harian di `/data/backups` (7 terakhir), dan tombol **Unduh cadangan database** di `/admin` → Donasi mengunduh file `.db`. Unduh berkala dan simpan di tempat lain; menghapus aplikasi di Deplexo ikut menghapus volumenya.
+Untuk memulihkan: hentikan aplikasi, ganti `/data/peduli.db` dengan file cadangan, lalu jalankan lagi.
 Hosting statis (Netlify/GitHub Pages) **tidak bisa** karena butuh backend.
 
 ## 4. Konfirmasi pembayaran otomatis (penting, baca ini)
@@ -70,4 +74,4 @@ Untuk mengganti QRIS: baca QR dari gambar QRIS baru (aplikasi pemindai/QR decode
 - Hati: satu per pengunjung (ID acak di browser) + pembatasan per IP; orang yang sengaja mengulik bisa menambah hati. Untuk keamanan lebih ketat perlu login pengguna.
 - Catatan hanya bisa ditulis dengan token rahasia donasi (disimpan di browser donatur) dan hanya setelah pembayaran terkonfirmasi, satu catatan per donasi.
 - Data pencairan dan alokasi adalah **input pengelola**; website tidak mengarang angka. Awalnya kosong sampai Anda mencatat.
-- Simpan cadangan folder `data/` secara berkala.
+- Unduh cadangan database dari `/admin` secara berkala.
