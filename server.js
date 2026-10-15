@@ -279,7 +279,8 @@ app.use('/api/admin', admin);
 /* ---------- static ---------- */
 app.use('/img', express.static(path.join(__dirname, 'public', 'img'), { maxAge: '7d' }));
 app.use('/fonts', express.static(path.join(__dirname, 'public', 'fonts'), { maxAge: '365d', immutable: true }));
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '5m' }));
+// HTML/JS/CSS selalu dicek ulang ke server (ETag) agar halaman baru tidak berpasangan dengan JS lama di cache browser
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache') }));
 app.get('/kuitansi', (req, res) => { res.set('Cache-Control', 'no-store'); res.sendFile(path.join(__dirname, 'public', 'kuitansi.html')); });
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
