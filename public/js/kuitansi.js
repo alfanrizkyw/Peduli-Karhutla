@@ -29,21 +29,22 @@ function fmtDate(t) {
 
 (async function init() {
   const q = new URLSearchParams(location.search), id = q.get('id') || '', token = q.get('token') || '';
-  if (!/^[a-f0-9]{16}$/.test(id) || !/^[a-f0-9]{32}$/.test(token)) return fail('Tautan kuitansi tidak valid. Buka kuitansi dari tombol "Cetak kuitansi" di website.');
+  if (!/^[a-f0-9]{16}$/.test(id) || !/^[a-f0-9]{32}$/.test(token)) return fail('Tautan nota tidak valid. Buka nota dari tombol "Cetak nota" di website.');
   let r;
   try {
     const res = await fetch(`/api/donations/${id}?token=${token}`, { cache: 'no-store' });
-    if (!res.ok) return fail(res.status === 404 ? 'Kuitansi tidak ditemukan.' : 'Gagal memuat kuitansi. Coba lagi sebentar.');
+    if (!res.ok) return fail(res.status === 404 ? 'Nota tidak ditemukan.' : 'Gagal memuat nota. Coba lagi sebentar.');
     r = await res.json();
   } catch { return fail('Tidak bisa terhubung ke server. Periksa koneksi Anda.'); }
-  if (r.status !== 'paid') return fail('Kuitansi baru tersedia setelah pembayaran terkonfirmasi.');
+  if (r.status !== 'paid') return fail('Nota baru tersedia setelah pembayaran terkonfirmasi.');
 
   $('#rcNo').textContent = r.receiptNo;
   $('#rcName').textContent = r.name;
+  $('#rcWho').textContent = r.name;
   $('#rcSay').textContent = terbilang(r.payAmount);
   $('#rcAmt').textContent = rupiah(r.payAmount);
   $('#rcDate').textContent = fmtDate(r.paidAt);
-  document.title = `Kuitansi ${r.receiptNo} — Peduli Karhutla`;
+  document.title = `Nota ${r.receiptNo} — Peduli Karhutla`;
   $('#state').hidden = true; $('#view').hidden = false;
   $('#print').addEventListener('click', () => window.print());
   if (q.get('print') === '1') setTimeout(() => window.print(), 300);

@@ -14,6 +14,8 @@
 .paper__no span{display:block;font:700 11.5px var(--font-b);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .paper__no b{font:800 17px var(--font-h);color:var(--ink);overflow-wrap:anywhere}
 .paper__title{font-weight:800;font-size:clamp(26px,5vw,36px);letter-spacing:.04em;text-transform:uppercase;text-align:center;margin:24px 0 20px;color:var(--red)}
+.paper__thanks{text-align:center;color:var(--ink-2);max-width:56ch;margin:0 auto 20px}
+.paper__thanks strong{color:var(--ink)}
 .paper__rows{margin:0}
 .paper__rows>div{display:grid;grid-template-columns:190px 1fr;gap:4px 18px;padding:11px 0;border-bottom:1px dotted var(--ink-2)}
 .paper__rows dt{font-weight:600;color:var(--ink-2);font-size:15px}
