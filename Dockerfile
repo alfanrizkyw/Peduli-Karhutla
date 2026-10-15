@@ -1,8 +1,8 @@
-# 1. Gunakan Node.js versi 22 (sesuai requirement better-sqlite3)
+# 1. Gunakan Node.js versi 22
 FROM node:22-alpine
 
-# 2. Install build tools (Python, make, g++) yang dibutuhkan untuk kompilasi better-sqlite3
-RUN apk add --no-libc-dev --no-cache python3 make g++
+# 2. Install build tools yang benar untuk kompilasi better-sqlite3
+RUN apk add --no-cache python3 make g++
 
 # 3. Set folder kerja di dalam container
 WORKDIR /app
@@ -16,13 +16,10 @@ RUN npm ci --omit=dev
 # 6. Salin seluruh kode proyek
 COPY . .
 
-# 7. Buat folder data agar SQLite memiliki tempat penyimpanan
+# 7. Buat folder data untuk SQLite
 RUN mkdir -p /app/data
 
-# 8. Expose port 3000
+# 8. Expose port dan jalankan aplikasi
 EXPOSE 3000
-
 ENV PORT=3000
-
-# 9. Jalankan aplikasi
 CMD ["node", "server.js"]
