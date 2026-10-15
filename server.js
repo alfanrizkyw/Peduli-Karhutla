@@ -5,11 +5,11 @@ const crypto = require('crypto');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const QRCode = require('qrcode');
+const { Resend } = require('resend');
 
 const cfg = require('./config');
 const db = require('./lib/db');
 const { makeDynamic, isCrcValid } = require('./lib/qris');
-const { sendThankYou } = require('./lib/mailer');
 
 const PORT = Number(process.env.PORT || 3000);
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/+$/, '');
@@ -28,7 +28,12 @@ db.exec('CREATE TABLE IF NOT EXISTS webhook_seen (id TEXT PRIMARY KEY, at INTEGE
 
 const app = express();
 app.disable('x-powered-by');
-if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
+
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
+} else {
+  app.set('trust proxy', 1);
+}
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -40,7 +45,13 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '100kb', verify: (req, res, buf) => { req.rawBody = buf; } }));
 
-const limiter = (windowMs, limit, message) => rateLimit({ windowMs, limit, standardHeaders: true, legacyHeaders: false, message: { error: message || 'Terlalu banyak permintaan, coba lagi sebentar.' } });
+const limiter = (windowMs, limit, message) => rateLimit({
+  windowMs,
+  limit,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: message || 'Terlalu banyak permintaan, coba lagi sebentar.' }
+});
 
 /* ---------- helpers ---------- */
 const now = () => Date.now();
@@ -55,6 +66,37 @@ const cleanText = (s, max) => String(s ?? '').replace(/\r/g, '').replace(/[\u000
 const isEmail = (e) => e.length <= 120 && /^[^\s@,;<>()"']+@[^\s@,;<>()"']+\.[A-Za-z]{2,}$/.test(e);
 const isVisitor = (v) => typeof v === 'string' && /^[a-zA-Z0-9-]{16,64}$/.test(v);
 const publicName = (d) => (d.hide_name ? 'Anonim' : d.name);
+
+/* ---------- resend mailer helper ---------- */
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+async function sendThankYou(d, baseUrl) {
+  if (!resend) {
+    const mailer = require('./lib/mailer');
+    return mailer.sendThankYou(d, baseUrl);
+  }
+
+  const mailFrom = process.env.MAIL_FROM || 'Peduli Karhutla <onboarding@resend.dev>';
+  const { data, error } = await resend.emails.send({
+    from: mailFrom,
+    to: [d.email],
+    subject: 'Terima Kasih - Donasi Peduli Karhutla Berhasil!',
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2 style="color: #2e7d32;">Terima Kasih, ${d.hide_name ? 'Donatur' : d.name}!</h2>
+        <p>Donasi Anda sebesar <strong style="color: #d32f2f;">Rp ${Number(d.pay_amount).toLocaleString('id-ID')}</strong> telah kami terima dan terverifikasi.</p>
+        <p>Dukungan Anda sangat berarti bagi tim lapangan penanggulangan Karhutla.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
+        <p style="font-size: 12px; color: #777;">Tim Pengelola Peduli Karhutla<br/><a href="${baseUrl}">${baseUrl}</a></p>
+      </div>
+    `
+  });
+
+  if (error) {
+    throw new Error(JSON.stringify(error));
+  }
+  return data;
+}
 
 /* ---------- realtime (Server-Sent Events) ---------- */
 const clients = new Set();
@@ -191,7 +233,7 @@ setInterval(() => {
   for (const r of db.prepare("SELECT id FROM donations WHERE status='paid' AND email_sent=0 AND email_attempts<6 AND paid_at < ?").all(t - 60_000)) sendEmailFor(r.id);
 }, 60_000).unref();
 
-/* webhook: Moota (mutasi bank/e-wallet). Header "Signature" = HMAC-SHA256(raw body, MOOTA_SECRET) */
+/* webhook: Moota */
 app.post('/api/webhook/moota', limiter(60_000, 120), (req, res) => {
   if (!MOOTA_SECRET) return res.status(503).json({ error: 'MOOTA_SECRET belum diatur' });
   const sig = String(req.get('Signature') || '');
@@ -207,7 +249,8 @@ app.post('/api/webhook/moota', limiter(60_000, 120), (req, res) => {
   }
   res.json({ ok: true, matched });
 });
-/* webhook umum: header "x-webhook-secret", body {"amount": 50000, "id": "unik-opsional"} */
+
+/* webhook umum */
 app.post('/api/webhook/payment', limiter(60_000, 120), (req, res) => {
   if (!WEBHOOK_SECRET || !safeEq(req.get('x-webhook-secret') || '', WEBHOOK_SECRET)) return res.status(401).json({ error: 'secret salah' });
   const amount = Math.round(Number(req.body?.amount));
@@ -262,7 +305,7 @@ admin.post('/donations/:id/resend-email', async (req, res) => {
 });
 admin.get('/notes', (req, res) => res.json(db.prepare('SELECT id,name,message,created_at FROM notes ORDER BY id DESC LIMIT 300').all()));
 admin.delete('/notes/:id', (req, res) => { db.prepare('DELETE FROM notes WHERE id=?').run(Number(req.params.id)); broadcast('note'); res.json({ ok: true }); });
-admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET, smtp: !!process.env.SMTP_HOST }));
+admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET, smtp: !!(process.env.RESEND_API_KEY || process.env.SMTP_HOST) }));
 admin.post('/disbursements', (req, res) => {
   const b = req.body || {};
   const amount = Number(b.amount);
@@ -291,8 +334,9 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.listen(PORT, () => {
-  console.log(`Peduli Karhutla berjalan di ${BASE_URL}  (port ${PORT})`);
-  if (!process.env.SMTP_HOST) console.log('! SMTP belum diatur: email ucapan terima kasih hanya ditulis ke data/outbox.log');
+  console.log(`Peduli Karhutla berjalan di ${BASE_URL} (port ${PORT})`);
+  if (!process.env.RESEND_API_KEY && !process.env.SMTP_HOST) console.log('! Resend/SMTP belum diatur: email ucapan terima kasih hanya ditulis ke data/outbox.log');
+  else console.log('Email via ' + (process.env.RESEND_API_KEY ? 'Resend API' : 'SMTP') + ', pengirim: ' + (process.env.MAIL_FROM || 'Peduli Karhutla <onboarding@resend.dev>'));
   if (!MOOTA_SECRET && !WEBHOOK_SECRET) console.log('! Webhook pembayaran belum diatur: konfirmasi hanya lewat /admin');
   if (!ADMIN_PASSWORD || ADMIN_PASSWORD === 'ganti-password-ini') console.log('! ADMIN_PASSWORD belum diatur: /admin dinonaktifkan');
 });
