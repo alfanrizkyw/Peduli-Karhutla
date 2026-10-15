@@ -1,6 +1,6 @@
 # Peduli Karhutla — Dari Rakyat Untuk Hutan
 
-Website donasi terbuka: pilih nominal → isi nama → scan QRIS (nominal terisi otomatis) → konfirmasi → donatur bisa **mencetak kuitansi**, boleh menulis catatan publik, dan semua orang bisa memberi hati. Total donasi, target Rp 100 juta, pencairan dan lokasi penerima tampil **realtime**.
+Website donasi terbuka: pilih nominal → isi nama → scan QRIS (nominal terisi otomatis) → konfirmasi → donatur bisa **mencetak nota terima kasih**, boleh menulis catatan publik, dan semua orang bisa memberi hati. Total donasi, target Rp 100 juta, pencairan dan lokasi penerima tampil **realtime**.
 
 ## Isi project
 ```
@@ -28,8 +28,8 @@ Uji logika QRIS: `npm test` (harus tertulis `QRIS OK`).
 | `MOOTA_SECRET` / `WEBHOOK_SECRET` | Konfirmasi pembayaran otomatis (bagian 4). |
 | `UNIQUE_CODE` | `true` = tambah 1–99 rupiah di nominal agar tiap transaksi unik. |
 
-### Kuitansi
-Setelah pembayaran terkonfirmasi, donatur melihat tombol **Cetak kuitansi** di halaman. Kuitansi terbuka di `/kuitansi?id=...&token=...` (tautan rahasia milik donatur), lalu bisa dicetak atau disimpan sebagai PDF lewat tombol cetak browser. Donatur yang menutup halaman tetap bisa mengambilnya dari daftar **Kuitansi saya** di kotak donasi (tersimpan di browser yang sama).
+### Nota terima kasih
+Setelah pembayaran terkonfirmasi, donatur melihat tombol **Cetak nota terima kasih** di halaman. Nota terbuka di `/kuitansi?id=...&token=...` (tautan rahasia milik donatur), lalu bisa dicetak atau disimpan sebagai PDF lewat tombol cetak browser. Donatur yang menutup halaman tetap bisa mengambilnya dari daftar **Nota saya** di kotak donasi (tersimpan di browser yang sama).
 
 ## 3. Online-kan (hosting)
 Website butuh server Node.js dan **disk yang awet** (database SQLite di folder `data/`). Pilihan mudah:
@@ -62,7 +62,7 @@ Untuk mengganti QRIS: baca QR dari gambar QRIS baru (aplikasi pemindai/QR decode
 1. `npm start`, buka website, tidak ada error di terminal.
 2. Pilih nominal → isi nama → QR muncul. Scan dengan aplikasi: nominal harus sama dengan di layar dan penerima "Peduli Karhutla, Service".
 3. Bayar nominal kecil (Rp 1.000) sungguhan; pastikan halaman berubah *Berhasil* (webhook) atau konfirmasi dari `/admin`.
-4. Tombol **Cetak kuitansi** muncul; buka, cetak/simpan PDF, cek nama, nominal dan nomor kuitansi.
+4. Tombol **Cetak nota terima kasih** muncul; buka, cetak/simpan PDF, cek nama, nominal dan nomor nota.
 5. Tulis catatan → tampil di semua perangkat tanpa refresh; beri hati dari HP lain.
 6. `/admin` → catat pencairan → angka *Sudah disalurkan*, *Dicairkan sebanyak*, per lokasi ikut berubah di website.
 

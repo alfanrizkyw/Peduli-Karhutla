@@ -243,7 +243,8 @@ async function createOrder(p) {
 function showPay(o) {
   if (o.serverTime) clockOffset = o.serverTime - Date.now();
   st.expiresAt = o.expiresAt;
-  $('#qrImg').src = o.qrImage; $('#dlQr').href = o.qrImage;
+  $('#qrImg').src = o.qrImage; $('#dlQr').href = o.qrImage; $('#dlQr').download = 'qris-peduli-karhutla.svg';
+  const im = new Image(); im.onload = () => { try { const c = document.createElement('canvas'); c.width = c.height = 800; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 800, 800); x.drawImage(im, 0, 0, 800, 800); $('#dlQr').href = c.toDataURL('image/png'); $('#dlQr').download = 'qris-peduli-karhutla.png'; } catch { /* tetap SVG */ } }; im.src = o.qrImage;
   $('#payAmt').textContent = rupiah(o.payAmount);
   $('#statusTxt').textContent = 'Menunggu pembayaran';
   $('#expiredNote').hidden = true; $('#renew').hidden = true;

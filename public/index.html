@@ -80,7 +80,7 @@
         <p class="sub">Tidak perlu daftar akun. Cukup tiga langkah, selesai dalam satu menit.</p>
         <ol class="howto">
           <li><strong>Pilih nominal.</strong> Dari Rp 5.000 sampai Rp 1.000.000, atau isi nominal sendiri.</li>
-          <li><strong>Isi nama Anda.</strong> Nama dipakai pada kuitansi dan catatan. Tanpa daftar akun, tanpa email.</li>
+          <li><strong>Isi nama Anda.</strong> Nama dipakai pada nota terima kasih dan catatan. Tanpa daftar akun, tanpa email.</li>
           <li><strong>Scan QRIS.</strong> Nominal sudah terisi otomatis di aplikasi Anda. Bayar dengan e-wallet atau m-banking apa saja.</li>
         </ol>
         <p class="safe"><strong>Aman.</strong> Pembayaran masuk langsung ke QRIS resmi <em>Peduli Karhutla, Service</em> (Kota Samarinda). Kami tidak menyimpan data kartu atau PIN Anda.</p>
@@ -105,7 +105,7 @@
           <p class="err" id="err1" role="alert" hidden></p>
           <button class="btn btn--block" id="to2" type="button" disabled>Pilih nominal dulu</button>
           <div class="mine" id="mine" hidden>
-            <h4 class="mine__t">Kuitansi saya</h4>
+            <h4 class="mine__t">Nota saya</h4>
             <ul class="mine__list" id="mineList"></ul>
           </div>
         </div>
@@ -156,8 +156,8 @@
           <p class="done__k">Pembayaran berhasil</p>
           <h3 class="done__t" id="doneTitle">Terima kasih</h3>
           <p class="done__amt" id="doneAmt">Rp 0</p>
-          <p class="done__p">Pembayaran Anda sudah kami terima. Simpan atau cetak kuitansi sebagai bukti donasi.</p>
-          <a class="btn btn--block" id="receiptBtn" href="#" target="_blank" rel="noopener">Cetak kuitansi</a>
+          <p class="done__p">Pembayaran Anda sudah kami terima. Simpan atau cetak nota terima kasih sebagai bukti donasi.</p>
+          <a class="btn btn--block" id="receiptBtn" href="#" target="_blank" rel="noopener">Cetak nota terima kasih</a>
           <p class="done__p done__p--gap">Sebagai donatur, Anda juga bisa menulis satu catatan untuk hutan yang tampil publik.</p>
           <a class="btn btn--green btn--block" href="#catatan" id="goNote">Tulis catatan</a>
           <button class="link link--center" type="button" id="again">Donasi lagi</button>
@@ -262,7 +262,7 @@
       <h2 id="h-faq">Pertanyaan yang sering muncul</h2>
       <details><summary>Bagaimana nominalnya terisi otomatis?</summary><p>Setelah Anda memilih nominal, website membuat kode QRIS khusus yang sudah memuat jumlah donasi Anda. Saat di-scan, aplikasi pembayaran langsung menampilkan nominal tersebut, tanpa perlu mengetik.</p></details>
       <details><summary>Ke mana uangnya masuk?</summary><p>Langsung ke rekening QRIS atas nama <em>Peduli Karhutla, Service</em>. Kode QR dibuat dari QRIS resmi yang sama, hanya ditambah nominal.</p></details>
-      <details><summary>Bagaimana mendapatkan kuitansi?</summary><p>Setelah pembayaran terkonfirmasi, tombol <strong>Cetak kuitansi</strong> muncul di kotak donasi. Buka, lalu cetak atau simpan sebagai PDF. Kuitansi sebelumnya tersimpan di daftar <strong>Kuitansi saya</strong> pada peramban yang sama.</p></details>
+      <details><summary>Bagaimana mendapatkan nota terima kasih?</summary><p>Setelah pembayaran terkonfirmasi, tombol <strong>Cetak nota terima kasih</strong> muncul di kotak donasi. Buka, lalu cetak atau simpan sebagai PDF. Nota sebelumnya tersimpan di daftar <strong>Nota saya</strong> pada peramban yang sama.</p></details>
       <details><summary>Saya sudah membayar tetapi halaman belum berubah</summary><p>Tunggu sampai satu menit lalu jangan tutup halaman. Konfirmasi memerlukan notifikasi dari penyedia pembayaran. Jika lebih dari lima menit, hubungi pengelola dengan menyebut nama dan nominal Anda.</p></details>
       <details><summary>Siapa yang boleh menulis catatan dan memberi hati?</summary><p>Menulis catatan hanya untuk donatur yang pembayarannya sudah berhasil, satu catatan untuk setiap donasi. Memberi hati bisa dilakukan siapa saja, satu hati untuk setiap catatan.</p></details>
       <details><summary>Bagaimana saya tahu dana benar-benar disalurkan?</summary><p>Setiap pencairan dicatat dengan tanggal, nominal, kebutuhan, lokasi, penerima dan keterangan, lengkap dengan tautan bukti bila ada. Semuanya tampil di bagian Penggunaan Dana secara langsung.</p></details>
