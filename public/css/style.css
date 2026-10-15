@@ -165,6 +165,15 @@ textarea{resize:vertical;min-height:110px;line-height:1.5}
 .done__p{color:var(--ink-2);font-size:15.5px;overflow-wrap:anywhere}
 .done__p strong{color:var(--ink)}
 
+.done__p--gap{margin-top:18px}
+.done .btn+.done__p{margin-top:20px}
+.mine{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.mine__t{font:800 17px var(--font-h);margin:0 0 6px}
+.mine__list{list-style:none;margin:0;padding:0}
+.mine__list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.mine__list b{font:800 16px var(--font-h);color:var(--red);font-variant-numeric:tabular-nums}
+.mine__list small{display:block;color:var(--ink-2);font-size:12.5px}
+
 /* ---------- kondisi ---------- */
 .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,40px);margin:28px 0 44px}
 .cols3 article{border-top:3px solid var(--ink);padding-top:14px}
