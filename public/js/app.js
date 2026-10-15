@@ -221,12 +221,11 @@ $('#back1').addEventListener('click', toStep1); $('#back1b').addEventListener('c
 
 $('#pane2').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = $('#name').value.trim().replace(/\s+/g, ' '), email = $('#email').value.trim();
+  const name = $('#name').value.trim().replace(/\s+/g, ' ');
   if (name.length < 2) return showErr($('#err2'), 'Mohon isi nama Anda (minimal 2 huruf).'), $('#name').focus();
-  if (!/^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email)) return showErr($('#err2'), 'Alamat email belum benar. Contoh: nama@email.com'), $('#email').focus();
   showErr($('#err2'), '');
   const btn = $('#to3'); btn.disabled = true; btn.textContent = 'Membuat QRIS...';
-  try { await createOrder({ name, email, hideName: $('#hide').checked }); }
+  try { await createOrder({ name, hideName: $('#hide').checked }); }
   catch (err) { showErr($('#err2'), err.message); }
   finally { btn.disabled = false; btn.textContent = 'Tampilkan QRIS'; }
 });
@@ -234,9 +233,9 @@ $('#pane2').addEventListener('submit', async (e) => {
 async function createOrder(p) {
   const o = await api('/api/donations', { method: 'POST', body: { ...p, amount: st.amount } });
   clockOffset = o.serverTime - Date.now();
-  st.info = { name: p.name, email: p.email };
+  st.info = { name: p.name };
   st.order = { id: o.id, token: o.token };
-  LS.set('pk_order', { ...st.order, name: p.name, email: p.email });
+  LS.set('pk_order', { ...st.order, name: p.name });
   const list = LS.get('pk_donations', []).filter((x) => x.id !== o.id); list.push({ id: o.id, token: o.token }); LS.set('pk_donations', list.slice(-15));
   showPay(o);
 }
@@ -268,12 +267,12 @@ async function pollStatus() {
 function stopPay() { clearInterval(st.timer); clearInterval(st.poll); st.timer = st.poll = null; }
 function paid(r) {
   stopPay();
-  const o = LS.get('pk_order', {}) || {};
+  const own = st.order || LS.get('pk_order', {}) || {};
   $('#doneTitle').textContent = 'Terima kasih, ' + r.name;
   $('#doneAmt').textContent = rupiah(r.payAmount);
-  $('#doneMail').textContent = (st.info && st.info.email) || o.email || 'email Anda';
+  $('#receiptBtn').href = receiptUrl(r.id || own.id, own.token);
   LS.del('pk_order'); st.order = null;
-  setStep('done'); refresh(); refreshComposer();
+  setStep('done'); refresh(); refreshComposer(); refreshReceipts();
   $('#donateBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 $('#cancel').addEventListener('click', async () => {
@@ -285,7 +284,7 @@ $('#renew').addEventListener('click', async () => {
   try {
     const old = st.order; const r = await api(`/api/donations/${old.id}?token=${old.token}`);
     if (r.status === 'paid') return paid(r);
-    await createOrder({ name: st.info.name, email: st.info.email, hideName: $('#hide').checked });
+    await createOrder({ name: st.info.name, hideName: $('#hide').checked });
   } catch (e) { showErr($('#err2'), e.message); setStep(2); }
   finally { b.disabled = false; }
 });
@@ -296,7 +295,7 @@ async function resumeOrder() {
   const o = LS.get('pk_order', null); if (!o || !o.id) return;
   try {
     const r = await api(`/api/donations/${o.id}?token=${o.token}`);
-    st.order = { id: o.id, token: o.token }; st.info = { name: o.name, email: o.email };
+    st.order = { id: o.id, token: o.token }; st.info = { name: o.name };
     if (r.status === 'paid') return paid(r);
     if (r.status === 'pending') { showPay({ ...r, qrImage: r.qrImage }); return; }
     LS.del('pk_order'); st.order = null;
@@ -330,14 +329,20 @@ $('#noteForm').addEventListener('submit', async (e) => {
   } catch (err) { showErr($('#noteErr'), err.message); }
   finally { btn.disabled = false; }
 });
-function readNoteLink() {
-  const q = new URLSearchParams(location.search).get('catatan'); if (!q) return false;
-  const [id, token] = q.split('.');
-  if (/^[a-f0-9]{16}$/.test(id || '') && /^[a-f0-9]{32}$/.test(token || '')) {
-    const list = LS.get('pk_donations', []); if (!list.some((x) => x.id === id)) { list.push({ id, token }); LS.set('pk_donations', list.slice(-15)); }
+
+/* ================= kuitansi ================= */
+const receiptUrl = (id, token) => `/kuitansi?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`;
+async function refreshReceipts() {
+  const list = LS.get('pk_donations', []), items = [];
+  for (const d of [...list].reverse()) {
+    try {
+      const r = await api(`/api/donations/${d.id}?token=${d.token}`);
+      if (r.status === 'paid') items.push(h('li', {},
+        h('span', {}, h('b', { text: rupiah(r.payAmount) }), h('small', { text: new Date(r.paidAt).toLocaleDateString('id-ID', { dateStyle: 'medium' }) })),
+        h('a', { class: 'link', href: receiptUrl(d.id, d.token), target: '_blank', rel: 'noopener', text: 'Cetak' })));
+    } catch (e) { if (e.status === 404) LS.set('pk_donations', LS.get('pk_donations', []).filter((x) => x.id !== d.id)); }
   }
-  history.replaceState(null, '', location.pathname + location.hash);
-  return true;
+  $('#mineList').replaceChildren(...items); $('#mine').hidden = !items.length;
 }
 
 /* ================= realtime ================= */
@@ -353,9 +358,7 @@ function connectStream() {
   buildLeaves();
   try { cfg = await api('/api/config'); } catch { cfg = { presets: [5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000], min: 1000, max: 10000000 }; }
   buildAmounts(); setAmount(0, false);
-  const fromEmail = readNoteLink();
   await loadPublic(); connectStream(); setInterval(loadPublic, 45000);
-  await resumeOrder(); await refreshComposer();
-  if (fromEmail) setTimeout(() => $('#catatan').scrollIntoView(), 200);
+  await resumeOrder(); await refreshComposer(); refreshReceipts();
 })();
 })();

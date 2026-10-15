@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f6f0e3">
+<title>Kuitansi Donasi — Peduli Karhutla</title>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/kuitansi.css">
+</head>
+<body class="rc">
+<header class="top noprint"><div class="wrap top__in">
+  <a class="brand" href="/"><img src="/img/logo-96.png" width="40" height="40" alt=""><span class="brand__txt"><strong>Peduli Karhutla</strong><small>Dari Rakyat Untuk Hutan</small></span></a>
+  <a class="link" href="/">Kembali ke beranda</a>
+</div></header>
+
+<main class="rc__main">
+  <p class="rc__state" id="state" role="status">Memuat kuitansi...</p>
+
+  <div id="view" hidden>
+    <div class="rc__bar noprint">
+      <button class="btn" id="print" type="button">Cetak kuitansi</button>
+      <p class="rc__tip">Di jendela cetak, pilih <strong>Simpan sebagai PDF</strong> bila ingin menyimpannya di perangkat.</p>
+    </div>
+
+    <article class="paper" aria-labelledby="rcTitle">
+      <header class="paper__head">
+        <img src="/img/logo-96.png" width="56" height="56" alt="">
+        <div class="paper__org"><strong>Peduli Karhutla</strong><small>Dari Rakyat Untuk Hutan</small></div>
+        <div class="paper__no"><span>Nomor</span><b id="rcNo">-</b></div>
+      </header>
+
+      <h1 class="paper__title" id="rcTitle">Kuitansi Donasi</h1>
+
+      <dl class="paper__rows">
+        <div><dt>Telah diterima dari</dt><dd id="rcName">-</dd></div>
+        <div><dt>Uang sejumlah</dt><dd class="paper__say" id="rcSay">-</dd></div>
+        <div><dt>Untuk pembayaran</dt><dd>Donasi penanggulangan kebakaran hutan dan lahan (pemadaman, penyelamatan satwa, pemulihan hutan)</dd></div>
+        <div><dt>Metode</dt><dd id="rcVia">QRIS</dd></div>
+        <div><dt>Tanggal bayar</dt><dd id="rcDate">-</dd></div>
+        <div><dt>Penerima</dt><dd>Peduli Karhutla, Service &middot; Kota Samarinda</dd></div>
+      </dl>
+
+      <footer class="paper__foot">
+        <div class="paper__sum"><span>Jumlah</span><strong id="rcAmt">Rp 0</strong></div>
+        <div class="paper__stamp" aria-label="Status pembayaran"><b>Lunas</b><small>Terkonfirmasi</small></div>
+      </footer>
+
+      <p class="paper__note">Kuitansi ini dibuat otomatis oleh sistem Peduli Karhutla sebagai bukti donasi setelah pembayaran terkonfirmasi. Terima kasih atas kepedulian Anda untuk hutan Kalimantan.</p>
+    </article>
+  </div>
+</main>
+<script src="/js/kuitansi.js" defer></script>
+</body>
+</html>

@@ -5,7 +5,6 @@ const crypto = require('crypto');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const QRCode = require('qrcode');
-const { Resend } = require('resend');
 
 const cfg = require('./config');
 const db = require('./lib/db');
@@ -63,40 +62,8 @@ const safeEq = (a, b) => {
 };
 const cleanLine = (s, max) => String(s ?? '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 const cleanText = (s, max) => String(s ?? '').replace(/\r/g, '').replace(/[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f<>]/g, '').replace(/\n{3,}/g, '\n\n').trim().slice(0, max);
-const isEmail = (e) => e.length <= 120 && /^[^\s@,;<>()"']+@[^\s@,;<>()"']+\.[A-Za-z]{2,}$/.test(e);
 const isVisitor = (v) => typeof v === 'string' && /^[a-zA-Z0-9-]{16,64}$/.test(v);
 const publicName = (d) => (d.hide_name ? 'Anonim' : d.name);
-
-/* ---------- resend mailer helper ---------- */
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-async function sendThankYou(d, baseUrl) {
-  if (!resend) {
-    const mailer = require('./lib/mailer');
-    return mailer.sendThankYou(d, baseUrl);
-  }
-
-  const mailFrom = process.env.MAIL_FROM || 'Peduli Karhutla <onboarding@resend.dev>';
-  const { data, error } = await resend.emails.send({
-    from: mailFrom,
-    to: [d.email],
-    subject: 'Terima Kasih - Donasi Peduli Karhutla Berhasil!',
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-        <h2 style="color: #2e7d32;">Terima Kasih, ${d.hide_name ? 'Donatur' : d.name}!</h2>
-        <p>Donasi Anda sebesar <strong style="color: #d32f2f;">Rp ${Number(d.pay_amount).toLocaleString('id-ID')}</strong> telah kami terima dan terverifikasi.</p>
-        <p>Dukungan Anda sangat berarti bagi tim lapangan penanggulangan Karhutla.</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;"/>
-        <p style="font-size: 12px; color: #777;">Tim Pengelola Peduli Karhutla<br/><a href="${baseUrl}">${baseUrl}</a></p>
-      </div>
-    `
-  });
-
-  if (error) {
-    throw new Error(JSON.stringify(error));
-  }
-  return data;
-}
 
 /* ---------- realtime (Server-Sent Events) ---------- */
 const clients = new Set();
@@ -158,10 +125,8 @@ async function qrImage(payload) {
 app.post('/api/donations', limiter(10 * 60_000, 12), async (req, res) => {
   try {
     const name = cleanLine(req.body.name, 60);
-    const email = String(req.body.email || '').trim().toLowerCase();
     const amount = Number(req.body.amount);
     if (name.length < 2) return res.status(400).json({ error: 'Nama minimal 2 huruf.' });
-    if (!isEmail(email)) return res.status(400).json({ error: 'Alamat email tidak valid.' });
     if (!Number.isInteger(amount) || amount < cfg.minAmount || amount > cfg.maxAmount)
       return res.status(400).json({ error: `Nominal harus antara Rp ${cfg.minAmount.toLocaleString('id-ID')} dan Rp ${cfg.maxAmount.toLocaleString('id-ID')}.` });
 
@@ -176,7 +141,7 @@ app.post('/api/donations', limiter(10 * 60_000, 12), async (req, res) => {
     const qris = makeDynamic(QRIS_STATIC, payAmount);
     const id = rid(8), token = rid(16), t = now();
     db.prepare('INSERT INTO donations (id, token, name, email, hide_name, amount, pay_amount, qris, created_at, expires_at) VALUES (?,?,?,?,?,?,?,?,?,?)')
-      .run(id, token, name, email, req.body.hideName ? 1 : 0, amount, payAmount, qris, t, t + TTL);
+      .run(id, token, name, '', req.body.hideName ? 1 : 0, amount, payAmount, qris, t, t + TTL);
     res.json({ id, token, amount, payAmount, status: 'pending', expiresAt: t + TTL, serverTime: t, qrImage: await qrImage(qris) });
   } catch (e) {
     console.error(e); res.status(500).json({ error: 'Gagal membuat QR pembayaran.' });
@@ -191,9 +156,10 @@ function loadOwn(req, res) {
 }
 app.get('/api/donations/:id', limiter(60_000, 90), async (req, res) => {
   const d = loadOwn(req, res); if (!d) return;
-  const out = { id: d.id, status: d.status, name: d.name, amount: d.amount, payAmount: d.pay_amount, expiresAt: d.expires_at, paidAt: d.paid_at, hideName: !!d.hide_name, serverTime: now(),
+  const out = { id: d.id, status: d.status, name: d.name, amount: d.amount, payAmount: d.pay_amount, expiresAt: d.expires_at, createdAt: d.created_at, paidAt: d.paid_at, hideName: !!d.hide_name, serverTime: now(),
     hasNote: !!db.prepare('SELECT 1 FROM notes WHERE donation_id=?').get(d.id) };
   if (d.status === 'pending') out.qrImage = await qrImage(d.qris);
+  if (d.status === 'paid') out.receiptNo = receiptNo(d);
   res.set('Cache-Control', 'no-store').json(out);
 });
 app.post('/api/donations/:id/cancel', limiter(60_000, 30), (req, res) => {
@@ -202,35 +168,24 @@ app.post('/api/donations/:id/cancel', limiter(60_000, 30), (req, res) => {
   res.json({ ok: true });
 });
 
-/* ---------- pembayaran berhasil ---------- */
+/* ---------- pembayaran berhasil & kuitansi ---------- */
+function receiptNo(d) {
+  const ymd = new Date((d.paid_at || d.created_at) + 7 * 3600_000).toISOString().slice(0, 10).replace(/-/g, '');
+  return `KW-${ymd}-${d.id.slice(0, 6).toUpperCase()}`;
+}
 function markPaidById(id, via) {
   const t = now();
   const r = db.prepare("UPDATE donations SET status='paid', paid_at=?, paid_via=? WHERE id=? AND status IN ('pending','expired')").run(t, via, id);
-  if (r.changes) { afterPaid(id); return true; }
+  if (r.changes) { afterPaid(); return true; }
   return false;
 }
 function markPaidByAmount(amount, via) {
   const row = db.prepare("SELECT id FROM donations WHERE status='pending' AND pay_amount=? AND expires_at+? > ? ORDER BY created_at ASC LIMIT 1").get(amount, GRACE, now());
   return row ? markPaidById(row.id, via) : false;
 }
-function afterPaid(id) {
-  broadcast('paid');
-  sendEmailFor(id);
-}
-async function sendEmailFor(id) {
-  const d = db.prepare('SELECT * FROM donations WHERE id=?').get(id);
-  if (!d || d.status !== 'paid' || d.email_sent) return;
-  db.prepare('UPDATE donations SET email_attempts=email_attempts+1 WHERE id=?').run(id);
-  try {
-    await sendThankYou(d, BASE_URL);
-    db.prepare('UPDATE donations SET email_sent=1 WHERE id=?').run(id);
-    console.log('[email] terkirim ke', d.email);
-  } catch (e) { console.error('[email] gagal kirim ke', d.email, '-', e.message); }
-}
+function afterPaid() { broadcast('paid'); }
 setInterval(() => {
-  const t = now();
-  db.prepare("UPDATE donations SET status='expired' WHERE status='pending' AND expires_at+? < ?").run(GRACE, t);
-  for (const r of db.prepare("SELECT id FROM donations WHERE status='paid' AND email_sent=0 AND email_attempts<6 AND paid_at < ?").all(t - 60_000)) sendEmailFor(r.id);
+  db.prepare("UPDATE donations SET status='expired' WHERE status='pending' AND expires_at+? < ?").run(GRACE, now());
 }, 60_000).unref();
 
 /* webhook: Moota */
@@ -294,18 +249,13 @@ admin.use(adminLimiter, adminAuth);
 admin.get('/ping', (req, res) => res.json({ ok: true }));
 admin.get('/donations', (req, res) => {
   const st = String(req.query.status || '');
-  const rows = db.prepare(`SELECT id,name,email,hide_name,amount,pay_amount,status,created_at,paid_at,paid_via,email_sent,email_attempts FROM donations ${st ? 'WHERE status=?' : ''} ORDER BY created_at DESC LIMIT 300`).all(...(st ? [st] : []));
+  const rows = db.prepare(`SELECT id,name,hide_name,amount,pay_amount,status,created_at,paid_at,paid_via FROM donations ${st ? 'WHERE status=?' : ''} ORDER BY created_at DESC LIMIT 300`).all(...(st ? [st] : []));
   res.json(rows);
 });
 admin.post('/donations/:id/confirm', (req, res) => res.json({ ok: markPaidById(String(req.params.id), 'admin') }));
-admin.post('/donations/:id/resend-email', async (req, res) => {
-  db.prepare('UPDATE donations SET email_sent=0, email_attempts=0 WHERE id=? AND status=?').run(String(req.params.id), 'paid');
-  await sendEmailFor(String(req.params.id));
-  res.json({ ok: !!db.prepare('SELECT email_sent FROM donations WHERE id=?').get(String(req.params.id))?.email_sent });
-});
 admin.get('/notes', (req, res) => res.json(db.prepare('SELECT id,name,message,created_at FROM notes ORDER BY id DESC LIMIT 300').all()));
 admin.delete('/notes/:id', (req, res) => { db.prepare('DELETE FROM notes WHERE id=?').run(Number(req.params.id)); broadcast('note'); res.json({ ok: true }); });
-admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET, smtp: !!(process.env.RESEND_API_KEY || process.env.SMTP_HOST) }));
+admin.get('/meta', (req, res) => res.json({ categories: cfg.allocation.map((a) => ({ key: a.key, label: a.label })), uniqueCode: UNIQUE_CODE, moota: !!MOOTA_SECRET, webhook: !!WEBHOOK_SECRET }));
 admin.post('/disbursements', (req, res) => {
   const b = req.body || {};
   const amount = Number(b.amount);
@@ -330,13 +280,12 @@ app.use('/api/admin', admin);
 app.use('/img', express.static(path.join(__dirname, 'public', 'img'), { maxAge: '7d' }));
 app.use('/fonts', express.static(path.join(__dirname, 'public', 'fonts'), { maxAge: '365d', immutable: true }));
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '5m' }));
+app.get('/kuitansi', (req, res) => { res.set('Cache-Control', 'no-store'); res.sendFile(path.join(__dirname, 'public', 'kuitansi.html')); });
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
 app.listen(PORT, () => {
   console.log(`Peduli Karhutla berjalan di ${BASE_URL} (port ${PORT})`);
-  if (!process.env.RESEND_API_KEY && !process.env.SMTP_HOST) console.log('! Resend/SMTP belum diatur: email ucapan terima kasih hanya ditulis ke data/outbox.log');
-  else console.log('Email via ' + (process.env.RESEND_API_KEY ? 'Resend API' : 'SMTP') + ', pengirim: ' + (process.env.MAIL_FROM || 'Peduli Karhutla <onboarding@resend.dev>'));
   if (!MOOTA_SECRET && !WEBHOOK_SECRET) console.log('! Webhook pembayaran belum diatur: konfirmasi hanya lewat /admin');
   if (!ADMIN_PASSWORD || ADMIN_PASSWORD === 'ganti-password-ini') console.log('! ADMIN_PASSWORD belum diatur: /admin dinonaktifkan');
 });

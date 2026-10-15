@@ -15,9 +15,10 @@ select{font:500 16px var(--font-b);color:var(--ink);background:var(--surface);bo
 .adm__row select{width:auto}
 .adm td,.adm th{font-size:14px}
 .adm .ledger{overflow-x:auto}
-.adm .ledger table{min-width:640px}
+@media (min-width:641px){.adm .ledger table{min-width:640px}}
 .adm .pill{font:700 12px var(--font-b);padding:2px 8px;border:1.5px solid currentColor;white-space:nowrap}
 .adm .pill.paid{color:var(--ink)}.adm .pill.pending{color:var(--red)}.adm .pill.expired,.adm .pill.cancelled{color:var(--ink-2)}
 .adm .btn-s{font:700 13px var(--font-b);padding:5px 10px;border:1.5px solid var(--red);color:var(--red);background:var(--surface);cursor:pointer;margin:0 4px 4px 0;border-radius:var(--r)}
 .adm .btn-s.g{border-color:var(--ink);color:var(--ink)}
-@media (max-width:640px){.adm__form{grid-template-columns:1fr}.adm .ledger tr,.adm .ledger td{display:revert}.adm .ledger table{display:table}.adm .ledger thead{display:table-header-group}.adm .ledger tbody{display:table-row-group}.adm .ledger tr{display:table-row;margin:0;border:0;padding:0}.adm .ledger td{display:table-cell;padding:10px 12px;border-bottom:1px solid var(--line)}.adm .ledger td::before{display:none}}
+@media (max-width:640px){.adm__form{grid-template-columns:1fr}.adm .ledger{overflow:visible}.adm .ledger td.num2{font-size:18px}.adm__row .adm__h{flex:1 1 100%}.adm__row select{flex:1}.adm .btn-s{padding:8px 14px}}
+.adm .ledger td:empty{display:none!important}

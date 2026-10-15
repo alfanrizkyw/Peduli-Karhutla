@@ -24,7 +24,6 @@ async function enter() {
   $('#login').hidden = true; $('#app').hidden = false; $('#logout').hidden = false;
   const m = await call('/meta');
   $('#meta').replaceChildren(
-    h('span', { class: m.smtp ? 'ok' : 'no', text: m.smtp ? 'Email SMTP: aktif' : 'Email SMTP: belum diatur (email ke data/outbox.log)' }),
     h('span', { class: m.moota ? 'ok' : 'no', text: m.moota ? 'Webhook Moota: aktif' : 'Webhook Moota: belum diatur' }),
     h('span', { class: m.webhook ? 'ok' : 'no', text: m.webhook ? 'Webhook umum: aktif' : 'Webhook umum: belum diatur' }),
     h('span', { text: m.uniqueCode ? 'Kode unik: aktif' : 'Kode unik: mati' }));
@@ -47,21 +46,18 @@ $$('.adm__tabs button').forEach((b) => b.addEventListener('click', () => {
 async function loadDon() {
   const rows = await call('/donations' + ($('#fStatus').value ? '?status=' + $('#fStatus').value : ''));
   $('#donTable tbody').replaceChildren(...rows.map((d) => h('tr', {},
-    h('td', { text: fmtT(d.created_at) }),
-    h('td', { text: d.name + (d.hide_name ? ' (anonim)' : '') }),
-    h('td', { text: d.email }),
-    h('td', { class: 'num2', text: rupiah(d.pay_amount) }),
-    h('td', {}, h('span', { class: 'pill ' + d.status, text: label[d.status] || d.status }), d.paid_via ? h('small', { text: ' via ' + d.paid_via }) : null),
-    h('td', { text: d.status === 'paid' ? (d.email_sent ? 'Terkirim' : `Belum (${d.email_attempts}x)`) : '-' }),
-    h('td', {},
-      d.status !== 'paid' && d.status !== 'cancelled' ? h('button', { class: 'btn-s', type: 'button', text: 'Konfirmasi', onclick: null, 'data-a': 'confirm', 'data-id': d.id }) : null,
-      d.status === 'paid' ? h('button', { class: 'btn-s g', type: 'button', text: 'Kirim ulang email', 'data-a': 'resend', 'data-id': d.id }) : null))));
+    h('td', { 'data-l': 'Waktu', text: fmtT(d.created_at) }),
+    h('td', { 'data-l': 'Nama', text: d.name + (d.hide_name ? ' (anonim)' : '') }),
+    h('td', { 'data-l': 'Bayar', class: 'num2', text: rupiah(d.pay_amount) }),
+    h('td', { 'data-l': 'Status' }, h('span', { class: 'pill ' + d.status, text: label[d.status] || d.status }), d.paid_via ? h('small', { text: ' via ' + d.paid_via }) : null),
+    h('td', { 'data-l': 'Aksi' },
+      d.status !== 'paid' && d.status !== 'cancelled' ? h('button', { class: 'btn-s', type: 'button', text: 'Konfirmasi', 'data-a': 'confirm', 'data-id': d.id }) : null))));
 }
 $('#donTable').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-a]'); if (!b) return;
-  if (b.dataset.a === 'confirm' && !confirm('Konfirmasi bahwa pembayaran ini sudah masuk ke rekening?')) return;
+  if (!confirm('Konfirmasi bahwa pembayaran ini sudah masuk ke rekening?')) return;
   b.disabled = true;
-  try { const r = await call(`/donations/${b.dataset.id}/${b.dataset.a === 'confirm' ? 'confirm' : 'resend-email'}`, 'POST'); if (b.dataset.a === 'resend') alert(r.ok ? 'Email terkirim.' : 'Email gagal dikirim. Cek pengaturan SMTP.'); }
+  try { await call(`/donations/${b.dataset.id}/confirm`, 'POST'); }
   catch (err) { alert(err.message); }
   loadDon();
 });
@@ -78,9 +74,9 @@ $('#disForm').addEventListener('submit', async (e) => {
 async function loadDis() {
   const res = await fetch('/api/public'); const d = await res.json();
   $('#disTable tbody').replaceChildren(...d.disbursements.map((r) => h('tr', {},
-    h('td', { text: r.date }), h('td', {}, r.categoryLabel, r.description ? h('small', { text: r.description }) : null), h('td', { text: r.location }),
-    h('td', { class: 'num2', text: rupiah(r.amount) }),
-    h('td', {}, h('button', { class: 'btn-s', type: 'button', text: 'Hapus', 'data-id': r.id })))));
+    h('td', { 'data-l': 'Tanggal', text: r.date }), h('td', { 'data-l': 'Kebutuhan' }, r.categoryLabel, r.description ? h('small', { text: r.description }) : null), h('td', { 'data-l': 'Lokasi', text: r.location }),
+    h('td', { 'data-l': 'Jumlah', class: 'num2', text: rupiah(r.amount) }),
+    h('td', { 'data-l': 'Aksi' }, h('button', { class: 'btn-s', type: 'button', text: 'Hapus', 'data-id': r.id })))));
 }
 $('#disTable').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-id]'); if (!b || !confirm('Hapus catatan pencairan ini? Angka di website ikut berubah.')) return;
@@ -88,8 +84,8 @@ $('#disTable').addEventListener('click', async (e) => {
 });
 async function loadNotes() {
   const rows = await call('/notes');
-  $('#noteTable tbody').replaceChildren(...rows.map((n) => h('tr', {}, h('td', { text: fmtT(n.created_at) }), h('td', { text: n.name }), h('td', { text: n.message }),
-    h('td', {}, h('button', { class: 'btn-s', type: 'button', text: 'Hapus', 'data-id': n.id })))));
+  $('#noteTable tbody').replaceChildren(...rows.map((n) => h('tr', {}, h('td', { 'data-l': 'Waktu', text: fmtT(n.created_at) }), h('td', { 'data-l': 'Nama', text: n.name }), h('td', { 'data-l': 'Catatan', text: n.message }),
+    h('td', { 'data-l': 'Aksi' }, h('button', { class: 'btn-s', type: 'button', text: 'Hapus', 'data-id': n.id })))));
 }
 $('#noteTable').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-id]'); if (!b || !confirm('Hapus catatan ini dari halaman publik?')) return;
