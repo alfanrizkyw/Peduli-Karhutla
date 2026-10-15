@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peduli Karhutla — Dari Rakyat Untuk Hutan</title>
+<meta name="description" content="Donasi terbuka untuk korban kebakaran hutan dan lahan di Kalimantan: pemadaman, penyelamatan satwa, dan pemulihan hutan. Semua pemasukan dan pencairan dana tampil terbuka secara langsung.">
+<meta name="theme-color" content="#f6f0e3">
+<meta property="og:title" content="Peduli Karhutla — Dari Rakyat Untuk Hutan">
+<meta property="og:description" content="Hutan Kalimantan terbakar, satwanya kehilangan rumah. Donasi lewat QRIS, dana terbuka dan bisa dipantau.">
+<meta property="og:image" content="/img/hutan-terbakar-sm.jpg">
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<a class="skip" href="#donasi">Langsung ke donasi</a>
+
+<header class="top">
+  <div class="wrap top__in">
+    <a class="brand" href="#atas" aria-label="Peduli Karhutla, ke atas">
+      <img src="/img/logo-96.png" width="40" height="40" alt="Logo Peduli Karhutla">
+      <span class="brand__txt"><strong>Peduli Karhutla</strong><small>Dari Rakyat Untuk Hutan</small></span>
+    </a>
+    <nav class="nav" aria-label="Menu utama">
+      <a href="#donasi">Donasi</a>
+      <a href="#kondisi">Kondisi</a>
+      <a href="#transparansi">Penggunaan Dana</a>
+      <a href="#catatan">Catatan</a>
+      <a href="#cara-kerja">Tanya Jawab</a>
+    </nav>
+  </div>
+</header>
+
+<main id="atas">
+  <section class="hero" aria-labelledby="judul">
+    <img class="hero__img" src="/img/hutan-terbakar.jpg"
+         srcset="/img/hutan-terbakar-sm.jpg 900w, /img/hutan-terbakar.jpg 1536w" sizes="100vw"
+         width="1536" height="1024" alt="Induk orangutan memeluk anaknya di tengah hutan Kalimantan yang terbakar, bekantan berjalan di dekat api" fetchpriority="high">
+    <div class="wrap">
+      <div class="hero__panel">
+        <div class="hero__copy">
+          <p class="eyebrow">Donasi terbuka &middot; Dari Rakyat Untuk Hutan</p>
+          <h1 id="judul">
+            <span class="fire">Hutan Kalimantan terbakar.</span>
+            <span class="leafline"><span class="leafline__txt">Satwanya kehilangan rumah.</span><span class="leaves" id="leaves" aria-hidden="true"></span></span>
+          </h1>
+          <p class="lead">Api melahap hutan, asap menyelimuti kampung, dan orangutan, bekantan serta burung enggang kehilangan tempat hidup. Donasi Anda dipakai untuk memadamkan api, menyelamatkan satwa dan menanam kembali hutan. Setiap rupiah yang masuk dan keluar bisa Anda lihat di website ini.</p>
+          <div class="hero__cta">
+            <a class="btn" href="#donasi">Donasi sekarang</a>
+            <a class="btn btn--green" href="#transparansi">Lihat penggunaan dana</a>
+          </div>
+        </div>
+
+        <aside class="goal" aria-label="Progres donasi">
+          <p class="goal__label">Terkumpul <span class="live"><i></i>langsung</span></p>
+          <p class="goal__amount" id="raised">Rp 0</p>
+          <p class="goal__of">dari target <strong id="target">Rp 100.000.000</strong></p>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Persentase target terkumpul" id="bar">
+            <div class="bar__fill" id="barFill"></div>
+            <span class="bar__tick"></span><span class="bar__tick"></span><span class="bar__tick"></span>
+          </div>
+          <p class="goal__pct"><strong id="pct">0%</strong> dari target tercapai</p>
+          <dl class="mini">
+            <div><dt>Donatur</dt><dd id="sDonors">0</dd></div>
+            <div><dt>Kali dicairkan</dt><dd id="sTimes">0</dd></div>
+            <div><dt>Lokasi dibantu</dt><dd id="sLocs">0</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DONASI ===== -->
+  <section class="sec" id="donasi" aria-labelledby="h-donasi">
+    <div class="wrap grid2">
+      <div class="sec__intro">
+        <p class="num">01</p>
+        <h2 id="h-donasi">Donasi dalam tiga langkah</h2>
+        <p class="sub">Tidak perlu daftar akun. Cukup tiga langkah, selesai dalam satu menit.</p>
+        <ol class="howto">
+          <li><strong>Pilih nominal.</strong> Dari Rp 5.000 sampai Rp 1.000.000, atau isi nominal sendiri.</li>
+          <li><strong>Isi nama dan email.</strong> Email dipakai untuk mengirim ucapan terima kasih dan tautan menulis catatan.</li>
+          <li><strong>Scan QRIS.</strong> Nominal sudah terisi otomatis di aplikasi Anda. Bayar dengan e-wallet atau m-banking apa saja.</li>
+        </ol>
+        <p class="safe"><strong>Aman.</strong> Pembayaran masuk langsung ke QRIS resmi <em>Peduli Karhutla, Service</em> (Kota Samarinda). Kami tidak menyimpan data kartu atau PIN Anda.</p>
+      </div>
+
+      <div class="donate" id="donateBox">
+        <ol class="steps" aria-label="Langkah donasi">
+          <li data-step="1" class="is-on"><span>1</span>Nominal</li>
+          <li data-step="2"><span>2</span>Data diri</li>
+          <li data-step="3"><span>3</span>Bayar</li>
+        </ol>
+
+        <!-- Langkah 1 -->
+        <div class="pane" id="pane1">
+          <h3 class="pane__t">Pilih nominal donasi</h3>
+          <div class="amts" id="amts" role="radiogroup" aria-label="Pilihan nominal donasi"></div>
+          <label class="field" for="custom">
+            <span>Atau tulis nominal lain</span>
+            <div class="money"><b>Rp</b><input id="custom" inputmode="numeric" autocomplete="off" placeholder="Minimal 1.000" aria-describedby="customHint"></div>
+            <small id="customHint">Minimal Rp 1.000, maksimal Rp 10.000.000.</small>
+          </label>
+          <p class="err" id="err1" role="alert" hidden></p>
+          <button class="btn btn--block" id="to2" type="button" disabled>Pilih nominal dulu</button>
+        </div>
+
+        <!-- Langkah 2 -->
+        <form class="pane" id="pane2" hidden novalidate>
+          <h3 class="pane__t">Isi data Anda</h3>
+          <p class="pane__sum">Donasi: <strong id="sum2">Rp 0</strong> <button type="button" class="link" id="back1">ubah</button></p>
+          <label class="field" for="name"><span>Nama</span>
+            <input id="name" name="name" autocomplete="name" maxlength="60" required placeholder="Nama Anda">
+          </label>
+          <label class="field" for="email"><span>Email (wajib)</span>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="120" required placeholder="nama@email.com" aria-describedby="emailHint">
+            <small id="emailHint">Ucapan terima kasih berisi nama dan nominal dikirim otomatis ke email ini setelah pembayaran berhasil.</small>
+          </label>
+          <label class="check"><input type="checkbox" id="hide"><span>Tampilkan saya sebagai <em>Anonim</em> di daftar publik dan catatan</span></label>
+          <p class="err" id="err2" role="alert" hidden></p>
+          <button class="btn btn--block" id="to3" type="submit">Tampilkan QRIS</button>
+          <button type="button" class="link link--center" id="back1b">Kembali</button>
+        </form>
+
+        <!-- Langkah 3 -->
+        <div class="pane" id="pane3" hidden>
+          <h3 class="pane__t">Scan untuk membayar</h3>
+          <div class="pay">
+            <div class="pay__qr">
+              <img id="qrImg" alt="Kode QRIS pembayaran donasi" width="240" height="240">
+              <p class="pay__logo">QRIS &middot; Peduli Karhutla, Service</p>
+            </div>
+            <div class="pay__info">
+              <p class="pay__amt"><span>Bayar tepat</span><strong id="payAmt">Rp 0</strong></p>
+              <p class="status" id="status" role="status"><i></i><span id="statusTxt">Menunggu pembayaran</span></p>
+              <p class="timer" id="timer">Berlaku 15:00</p>
+              <ol class="paysteps">
+                <li>Buka e-wallet atau m-banking Anda</li>
+                <li>Pilih <strong>Scan / Bayar QRIS</strong></li>
+                <li>Arahkan ke kode di samping, nominal terisi otomatis</li>
+                <li>Konfirmasi. Halaman ini otomatis berubah saat berhasil</li>
+              </ol>
+              <div class="pay__act">
+                <a class="link" id="dlQr" download="qris-peduli-karhutla.svg" href="#">Unduh QR</a>
+                <button type="button" class="link" id="cancel">Batalkan</button>
+              </div>
+            </div>
+          </div>
+          <p class="note-small" id="expiredNote" hidden>Waktu QR habis. Jika Anda sudah terlanjur membayar, jangan khawatir, pembayaran tetap akan tercatat. Jika belum, buat QR baru.</p>
+          <button class="btn btn--block" id="renew" type="button" hidden>Buat QR baru</button>
+        </div>
+
+        <!-- Sukses -->
+        <div class="pane done" id="paneDone" hidden>
+          <p class="done__k">Pembayaran berhasil</p>
+          <h3 class="done__t" id="doneTitle">Terima kasih</h3>
+          <p class="done__amt" id="doneAmt">Rp 0</p>
+          <p class="done__p">Email ucapan terima kasih sedang dikirim ke <strong id="doneMail"></strong>. Cek juga folder Spam bila belum terlihat.</p>
+          <p class="done__p">Sebagai donatur, Anda bisa menulis satu catatan untuk hutan yang tampil publik.</p>
+          <a class="btn btn--block" href="#catatan" id="goNote">Tulis catatan</a>
+          <button class="link link--center" type="button" id="again">Donasi lagi</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KONDISI ===== -->
+  <section class="sec sec--alt" id="kondisi" aria-labelledby="h-kondisi">
+    <div class="wrap">
+      <p class="num">02</p>
+      <h2 id="h-kondisi">Mengapa donasi ini mendesak</h2>
+      <div class="cols3">
+        <article><h3>Hutan hilang</h3><p>Kebakaran lahan gambut sulit dipadamkan karena api merambat di bawah tanah. Butuh air, pompa, selang, dan tenaga relawan yang bekerja berhari-hari.</p></article>
+        <article><h3>Satwa kehilangan rumah</h3><p>Orangutan, bekantan dan burung enggang lari dari api. Banyak yang terluka, kelaparan atau terpisah dari induknya, dan perlu dievakuasi serta dirawat.</p></article>
+        <article><h3>Warga ikut terdampak</h3><p>Asap mengganggu pernapasan, sekolah, dan mata pencaharian warga sekitar. Pencegahan dan edukasi desa mencegah kejadian berulang.</p></article>
+      </div>
+      <div class="donors" aria-live="polite">
+        <h3 class="donors__t">Donatur terbaru <span class="live"><i></i>langsung</span></h3>
+        <ul id="donorList" class="donors__list"><li class="empty">Belum ada donasi. Jadilah yang pertama.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRANSPARANSI ===== -->
+  <section class="sec" id="transparansi" aria-labelledby="h-trans">
+    <div class="wrap">
+      <p class="num">03</p>
+      <h2 id="h-trans">Penggunaan dana, terbuka dan langsung</h2>
+      <p class="sub">Angka di bawah dihitung otomatis dari data donasi dan catatan pencairan. Berubah seketika saat ada donasi atau pencairan baru.</p>
+
+      <dl class="tiles">
+        <div><dt>Total dana masuk</dt><dd id="tRaised">Rp 0</dd></div>
+        <div><dt>Sudah disalurkan</dt><dd id="tDisb">Rp 0</dd></div>
+        <div><dt>Belum disalurkan</dt><dd id="tAvail">Rp 0</dd></div>
+        <div><dt>Dicairkan sebanyak</dt><dd id="tTimes">0 kali</dd></div>
+      </dl>
+
+      <div class="grid2 grid2--top">
+        <div>
+          <h3 class="h3">Rencana dan realisasi per kebutuhan</h3>
+          <p class="hint">Persentase adalah rencana alokasi dari total dana masuk. Garis hijau menunjukkan dana yang sudah benar-benar disalurkan.</p>
+          <ul class="alloc" id="alloc"></ul>
+        </div>
+        <div>
+          <h3 class="h3">Sudah didonasikan ke lokasi</h3>
+          <p class="hint">Lokasi penerima bantuan dan total dana yang sudah sampai ke sana.</p>
+          <ul class="locs" id="locs"><li class="empty">Belum ada pencairan ke lokasi.</li></ul>
+        </div>
+      </div>
+
+      <h3 class="h3 h3--gap">Riwayat pencairan</h3>
+      <div class="ledger" id="ledger"><p class="empty">Belum ada pencairan. Setiap pencairan akan muncul di sini begitu dicatat pengelola.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== CATATAN ===== -->
+  <section class="sec sec--alt" id="catatan" aria-labelledby="h-note">
+    <div class="wrap grid2 grid2--notes">
+      <div>
+        <p class="num">04</p>
+        <h2 id="h-note">Catatan untuk hutan</h2>
+        <p class="sub">Pesan dari para donatur. Siapa pun boleh membaca dan memberi hati, tetapi hanya yang sudah berdonasi yang bisa menulis.</p>
+
+        <div class="composer" id="composer">
+          <div id="noteLocked">
+            <p class="composer__t">Menulis catatan khusus donatur</p>
+            <p class="composer__p">Setelah pembayaran berhasil, kotak menulis akan terbuka otomatis di sini. Anda juga bisa membukanya dari tautan di email ucapan terima kasih.</p>
+            <a class="btn btn--green" href="#donasi">Berdonasi untuk menulis</a>
+          </div>
+          <form id="noteForm" hidden>
+            <p class="composer__t">Menulis sebagai <strong id="noteAs">Anda</strong></p>
+            <label class="field" for="noteText"><span>Catatan Anda</span>
+              <textarea id="noteText" rows="4" maxlength="280" placeholder="Tulis harapan atau pesan untuk hutan dan satwa Kalimantan"></textarea>
+            </label>
+            <div class="composer__row"><small id="noteCount">0 / 280</small></div>
+            <p class="err" id="noteErr" role="alert" hidden></p>
+            <button class="btn" type="submit">Kirim catatan</button>
+          </form>
+          <p class="okmsg" id="noteDone" hidden>Catatan Anda sudah tampil. Terima kasih.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="notes__head">
+          <h3 class="h3">Semua catatan <span class="live"><i></i>langsung</span></h3>
+          <div class="seg" role="group" aria-label="Urutkan catatan">
+            <button type="button" class="is-on" data-sort="new" aria-pressed="true">Terbaru</button>
+            <button type="button" data-sort="top" aria-pressed="false">Terbanyak hati</button>
+          </div>
+        </div>
+        <ul class="notes" id="notes" aria-live="polite"><li class="empty">Belum ada catatan. Donatur pertama bisa membuka halaman ini.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="sec" id="cara-kerja" aria-labelledby="h-faq">
+    <div class="wrap faq">
+      <p class="num">05</p>
+      <h2 id="h-faq">Pertanyaan yang sering muncul</h2>
+      <details><summary>Bagaimana nominalnya terisi otomatis?</summary><p>Setelah Anda memilih nominal, website membuat kode QRIS khusus yang sudah memuat jumlah donasi Anda. Saat di-scan, aplikasi pembayaran langsung menampilkan nominal tersebut, tanpa perlu mengetik.</p></details>
+      <details><summary>Ke mana uangnya masuk?</summary><p>Langsung ke rekening QRIS atas nama <em>Peduli Karhutla, Service</em>. Kode QR dibuat dari QRIS resmi yang sama, hanya ditambah nominal.</p></details>
+      <details><summary>Kapan saya menerima email?</summary><p>Beberapa saat setelah pembayaran terkonfirmasi. Isinya ucapan terima kasih, nama dan nominal donasi Anda, serta tautan untuk menulis catatan. Periksa folder Spam jika belum ada.</p></details>
+      <details><summary>Saya sudah membayar tetapi halaman belum berubah</summary><p>Tunggu sampai satu menit lalu jangan tutup halaman. Konfirmasi memerlukan notifikasi dari penyedia pembayaran. Jika lebih dari lima menit, balas email konfirmasi atau hubungi pengelola dengan menyebut nama dan nominal Anda.</p></details>
+      <details><summary>Siapa yang boleh menulis catatan dan memberi hati?</summary><p>Menulis catatan hanya untuk donatur yang pembayarannya sudah berhasil, satu catatan untuk setiap donasi. Memberi hati bisa dilakukan siapa saja, satu hati untuk setiap catatan.</p></details>
+      <details><summary>Bagaimana saya tahu dana benar-benar disalurkan?</summary><p>Setiap pencairan dicatat dengan tanggal, nominal, kebutuhan, lokasi, penerima dan keterangan, lengkap dengan tautan bukti bila ada. Semuanya tampil di bagian Penggunaan Dana secara langsung.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <div class="foot__brand"><img src="/img/logo-96.png" width="36" height="36" alt=""><div><strong>Peduli Karhutla</strong><small>Dari Rakyat Untuk Hutan</small></div></div>
+    <p>Donasi terbuka untuk pemadaman, penyelamatan satwa dan pemulihan hutan Kalimantan. Pembayaran melalui QRIS.</p>
+  </div>
+</footer>
+
+<script src="/js/app.js" defer></script>
+</body>
+</html>

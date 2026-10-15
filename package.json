@@ -1,0 +1,22 @@
+{
+  "name": "peduli-karhutla",
+  "version": "1.0.0",
+  "description": "Website donasi Peduli Karhutla - Dari Rakyat Untuk Hutan",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/qris.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "nodemailer": "^10.1.1",
+    "qrcode": "^1.5.4"
+  }
+}

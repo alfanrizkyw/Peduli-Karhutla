@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin — Peduli Karhutla</title>
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="adm">
+<header class="top"><div class="wrap top__in">
+  <a class="brand" href="/"><img src="/img/logo-96.png" width="40" height="40" alt=""><span class="brand__txt"><strong>Admin Peduli Karhutla</strong><small>Panel pengelola</small></span></a>
+  <button class="link" id="logout" hidden type="button">Keluar</button>
+</div></header>
+
+<main class="wrap adm__main">
+  <section id="login" class="adm__box adm__login">
+    <h1 class="adm__h">Masuk pengelola</h1>
+    <form id="loginForm">
+      <label class="field" for="pw"><span>Password admin</span><input id="pw" type="password" autocomplete="current-password" required></label>
+      <p class="err" id="loginErr" hidden role="alert"></p>
+      <button class="btn btn--block" type="submit">Masuk</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <div id="meta" class="adm__meta"></div>
+    <div class="seg adm__tabs" role="tablist" aria-label="Menu admin">
+      <button type="button" class="is-on" data-tab="don" role="tab">Donasi</button>
+      <button type="button" data-tab="dis" role="tab">Pencairan dana</button>
+      <button type="button" data-tab="note" role="tab">Catatan</button>
+    </div>
+
+    <section id="tab-don" class="adm__box">
+      <div class="adm__row">
+        <h2 class="adm__h">Daftar donasi</h2>
+        <select id="fStatus" aria-label="Filter status"><option value="">Semua</option><option value="pending">Menunggu</option><option value="paid">Berhasil</option><option value="expired">Kedaluwarsa</option><option value="cancelled">Dibatalkan</option></select>
+        <button type="button" class="link" id="reloadDon">Muat ulang</button>
+      </div>
+      <p class="hint">Jika pembayaran sudah masuk tetapi status masih Menunggu (misalnya webhook belum aktif), cocokkan nominalnya di mutasi lalu tekan <strong>Konfirmasi</strong>. Email terima kasih terkirim otomatis.</p>
+      <div class="ledger"><table id="donTable"><thead><tr><th>Waktu</th><th>Nama</th><th>Email</th><th class="r">Bayar</th><th>Status</th><th>Email</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section id="tab-dis" class="adm__box" hidden>
+      <h2 class="adm__h">Catat pencairan dana</h2>
+      <form id="disForm" class="adm__form">
+        <label class="field"><span>Tanggal</span><input type="date" id="dDate" required></label>
+        <label class="field"><span>Nominal (Rp)</span><input id="dAmount" inputmode="numeric" required placeholder="2.500.000"></label>
+        <label class="field"><span>Kebutuhan</span><select id="dCat" required></select></label>
+        <label class="field"><span>Lokasi</span><input id="dLoc" list="locList" required maxlength="80" placeholder="Desa / kecamatan / kabupaten, provinsi"><datalist id="locList"><option>Kalimantan Tengah</option><option>Kalimantan Barat</option><option>Kalimantan Selatan</option><option>Kalimantan Timur</option><option>Kalimantan Utara</option></datalist></label>
+        <label class="field"><span>Penerima</span><input id="dRecv" maxlength="100" placeholder="Nama tim / lembaga / posko"></label>
+        <label class="field"><span>Link bukti (opsional)</span><input id="dProof" type="url" placeholder="https://..."></label>
+        <label class="field adm__wide"><span>Keterangan</span><textarea id="dDesc" rows="3" maxlength="400" placeholder="Contoh: pembelian 10 pompa air dan 200 meter selang untuk relawan"></textarea></label>
+        <p class="err adm__wide" id="disErr" hidden role="alert"></p>
+        <button class="btn" type="submit">Simpan pencairan</button>
+      </form>
+      <h2 class="adm__h adm__gap">Riwayat pencairan</h2>
+      <div class="ledger"><table id="disTable"><thead><tr><th>Tanggal</th><th>Kebutuhan</th><th>Lokasi</th><th class="r">Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section id="tab-note" class="adm__box" hidden>
+      <h2 class="adm__h">Moderasi catatan</h2>
+      <div class="ledger"><table id="noteTable"><thead><tr><th>Waktu</th><th>Nama</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </section>
+  </div>
+</main>
+<script src="/js/admin.js" defer></script>
+</body>
+</html>
